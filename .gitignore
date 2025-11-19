@@ -1,4 +1,4 @@
-/vendor/\n/node_modules/\n*.log\n.env
+vendor/
 node_modules/
 dist/
 build/
