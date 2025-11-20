@@ -43,22 +43,23 @@ export default function Dashboard() {
       cols={12}                   // Total number of columns in the grid
       rowHeight={100}             // Height of each row in pixels
       width={1200}                // Total width of the grid in pixels
+      margin={[0, 0]}             // removes spacing between items
+      containerPadding={[0, 0]}   // removes padding at edges
       onLayoutChange={(newLayout) => setLayout(newLayout)} // Update layout when widgets move/resize
     >
       {/* Hamburger menu widget */}
       <div key="menu" style={{ background: "#333", color: "#fff", padding: "10px" }}>
-        {/* Unicode hamburger icon */}
-        ☰ Hamburger Menu
+        ☰ Menu
       </div>
 
       {/* Screener widget */}
       <div key="screener" style={{ background: "#eee", padding: "10px" }}>
-        📊 Screener Widget
+        📊 Screener
       </div>
 
       {/* Calendar widget */}
       <div key="calendar" style={{ background: "#ddd", padding: "10px" }}>
-        📅 Calendar Widget
+        📅 Calendar
       </div>
     </GridLayout>
   );
