@@ -6,7 +6,7 @@ import "react-resizable/css/styles.css";
 
 /**
  * Helper: fetch ticker data from Yahoo Finance API (unauthenticated endpoint).
- * You can swap this with your own source later (e.g., paid API).
+ * Swap to your preferred paid/source later.
  */
 async function fetchTickerData(symbol) {
   const res = await fetch(
@@ -19,7 +19,7 @@ async function fetchTickerData(symbol) {
   if (!quote) {
     return {
       name: "Unknown",
-      symbol,
+      symbol: symbol.toUpperCase(),
       price: "—",
       dayHigh: "—",
       dayLow: "—",
@@ -32,33 +32,25 @@ async function fetchTickerData(symbol) {
   }
 
   return {
-    name: quote.longName || quote.shortName || symbol,
-    symbol: quote.symbol || symbol,
+    name: quote.longName || quote.shortName || symbol.toUpperCase(),
+    symbol: quote.symbol || symbol.toUpperCase(),
     price: quote.regularMarketPrice ?? "—",
     dayHigh: quote.regularMarketDayHigh ?? "—",
     dayLow: quote.regularMarketDayLow ?? "—",
     yearHigh: quote.fiftyTwoWeekHigh ?? "—",
     yearLow: quote.fiftyTwoWeekLow ?? "—",
-    // Placeholder metrics for compare mode (wire real data later)
+    // Placeholders for future compare metrics
     totalReturn: "N/A",
     priceReturn: "N/A",
     nav: "N/A",
   };
 }
 
-/**
- * Dashboard component
- * - ☰ Hamburger menu (toggles panel)
- * - Add ticker widgets dynamically
- * - Each widget: close (✖), fullscreen (⛶), compare checkbox
- * - Fullscreen overlay for single ticker or compare view
- * - Persists layout and tickers in localStorage
- */
 export default function Dashboard() {
-  // Persisted grid layout (only menu by default)
+  // Persisted grid layout (only menu icon widget by default)
   const [layout, setLayout] = useState(() => {
     const saved = localStorage.getItem("dashboard-layout");
-    return saved ? JSON.parse(saved) : [{ i: "menu", x: 0, y: 0, w: 2, h: 1 }];
+    return saved ? JSON.parse(saved) : [{ i: "menu", x: 0, y: 0, w: 1, h: 1 }];
   });
 
   // Persisted ticker widgets
@@ -70,8 +62,8 @@ export default function Dashboard() {
   // Fullscreen overlay state: { type: "ticker" | "compare", data?: {...} }
   const [fullscreenWidget, setFullscreenWidget] = useState(null);
 
-  // Hamburger menu toggle
-  const [menuOpen, setMenuOpen] = useState(false);
+  // Slide-in drawer (hamburger menu) toggle
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // Persist layout + tickers whenever they change
   useEffect(() => {
@@ -86,7 +78,7 @@ export default function Dashboard() {
 
     setLayout((prev) => [
       ...prev,
-      { i: id, x: 0, y: Infinity, w: 3, h: 2 }, // y: Infinity → auto place at bottom
+      { i: id, x: 0, y: Infinity, w: 3, h: 2 }, // auto place at bottom
     ]);
 
     setTickers((prev) => [...prev, { id, data, compare: false }]);
@@ -123,7 +115,6 @@ export default function Dashboard() {
             overflowY: "auto",
           }}
         >
-          {/* Close fullscreen */}
           <button
             onClick={() => setFullscreenWidget(null)}
             style={{
@@ -139,7 +130,6 @@ export default function Dashboard() {
             ✖ Close Fullscreen
           </button>
 
-          {/* Single ticker fullscreen details */}
           {fullscreenWidget.type === "ticker" && fullscreenWidget.data && (
             <>
               <h2 style={{ marginTop: 0 }}>
@@ -157,12 +147,11 @@ export default function Dashboard() {
             </>
           )}
 
-          {/* Comparison fullscreen view */}
           {fullscreenWidget.type === "compare" && (
             <>
               <h2 style={{ marginTop: 0 }}>Comparison View</h2>
 
-              {/* Controls to add/remove tickers in compare mode */}
+              {/* Add/remove tickers inside compare view */}
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
@@ -170,14 +159,11 @@ export default function Dashboard() {
                   if (!symbol) return;
                   const data = await fetchTickerData(symbol);
                   const id = `ticker-${data.symbol}-${Date.now()}`;
-
-                  // Add into both layout (hidden in fullscreen but needed for persistence) and tickers
                   setLayout((prev) => [
                     ...prev,
                     { i: id, x: 0, y: Infinity, w: 3, h: 2 },
                   ]);
                   setTickers((prev) => [...prev, { id, data, compare: true }]);
-
                   e.currentTarget.reset();
                 }}
                 style={{ marginBottom: "16px" }}
@@ -203,11 +189,10 @@ export default function Dashboard() {
                 </button>
               </form>
 
-              {/* Comparison metric selector (placeholders; wire to real metrics later) */}
+              {/* Metric selector (placeholders; wire real calculations later) */}
               <div style={{ marginBottom: "12px" }}>
                 <strong>Metrics:</strong>
                 <div style={{ marginTop: "6px" }}>
-                  {/* In a future iteration, use radio/select and compute real values */}
                   <label style={{ marginRight: "12px" }}>
                     <input type="radio" name="metric" defaultChecked /> Price return
                   </label>
@@ -220,7 +205,6 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* List compared tickers */}
               {compareTickers.length === 0 ? (
                 <p style={{ color: "#bbb" }}>No tickers selected for comparison.</p>
               ) : (
@@ -237,14 +221,13 @@ export default function Dashboard() {
                       <strong style={{ marginRight: "8px" }}>{t.data.symbol}</strong>
                       <span style={{ color: "#bbb" }}>— {t.data.name}</span>
                       <button
-                        onClick={() => {
-                          // Unselect from compare (but keep widget unless closed)
+                        onClick={() =>
                           setTickers((prev) =>
                             prev.map((x) =>
                               x.id === t.id ? { ...x, compare: false } : x
                             )
-                          );
-                        }}
+                          )
+                        }
                         style={{
                           marginLeft: "auto",
                           background: "#555",
@@ -279,6 +262,183 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Slide-in drawer (global, independent of grid) */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: drawerOpen ? 0 : -280, // slide in/out
+          width: 280,
+          height: "100vh",
+          background: "#1f1f1f",
+          color: "#fff",
+          boxShadow: "2px 0 10px rgba(0,0,0,0.4)",
+          zIndex: 900,
+          transition: "left 220ms ease",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        {/* Drawer header with close */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            padding: "12px 12px 8px",
+            borderBottom: "1px solid #333",
+          }}
+        >
+          <span style={{ fontSize: 20, marginRight: 8 }}>☰</span>
+          <strong>Menu</strong>
+          <button
+            onClick={() => setDrawerOpen(false)}
+            style={{
+              marginLeft: "auto",
+              background: "transparent",
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+              fontSize: 18,
+            }}
+            aria-label="Close menu"
+          >
+            ✖
+          </button>
+        </div>
+
+        {/* Drawer content */}
+        <div style={{ padding: "12px" }}>
+          {/* Add ticker form */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const symbol = e.currentTarget.elements.symbol.value.toUpperCase();
+              if (symbol) addTicker(symbol);
+              e.currentTarget.reset();
+            }}
+          >
+            <label style={{ fontSize: 12, color: "#bbb" }}>Add ticker</label>
+            <input
+              type="text"
+              name="symbol"
+              placeholder="e.g., AAPL"
+              style={{
+                width: "100%",
+                padding: "8px",
+                marginTop: "6px",
+                borderRadius: 4,
+                border: "1px solid #333",
+                background: "#2a2a2a",
+                color: "#fff",
+              }}
+            />
+            <button
+              type="submit"
+              style={{
+                marginTop: "8px",
+                width: "100%",
+                padding: "8px",
+                background: "#2d7ef7",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              ➕ Add Ticker
+            </button>
+          </form>
+
+          {/* Open fullscreen compare view */}
+          <button
+            onClick={() => setFullscreenWidget({ type: "compare" })}
+            style={{
+              marginTop: "12px",
+              width: "100%",
+              padding: "8px",
+              background: "#555",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            🔍 Compare Mode
+          </button>
+
+          {/* Future widget spawners (wire later) */}
+          <button
+            style={{
+              marginTop: "12px",
+              width: "100%",
+              padding: "8px",
+              background: "#555",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            📅 Add Calendar
+          </button>
+          <button
+            style={{
+              marginTop: "12px",
+              width: "100%",
+              padding: "8px",
+              background: "#555",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            📰 Add News
+          </button>
+          <button
+            style={{
+              marginTop: "12px",
+              width: "100%",
+              padding: "8px",
+              background: "#555",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            ✍️ Add Blog
+          </button>
+          <button
+            style={{
+              marginTop: "12px",
+              width: "100%",
+              padding: "8px",
+              background: "#555",
+              color: "#fff",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            🔐 Login
+          </button>
+        </div>
+      </div>
+
+      {/* Backdrop (click to close drawer) */}
+      {drawerOpen && (
+        <div
+          onClick={() => setDrawerOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.35)",
+            zIndex: 850,
+          }}
+        />
+      )}
+
       {/* Main grid layout */}
       <GridLayout
         className="layout"
@@ -290,144 +450,23 @@ export default function Dashboard() {
         containerPadding={[0, 0]}
         onLayoutChange={(newLayout) => setLayout(newLayout)}
       >
-        {/* Hamburger menu widget (icon only; panel opens on click) */}
+        {/* Minimal hamburger menu widget (icon only) */}
         <div
           key="menu"
           style={{
             background: "#333",
             color: "#fff",
-            padding: "10px",
+            padding: "8px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
             cursor: "pointer",
-            position: "relative",
+            userSelect: "none",
           }}
+          onClick={() => setDrawerOpen(true)}
+          title="Open menu"
         >
-          {/* ☰ icon toggles menuOpen */}
-          <div onClick={() => setMenuOpen(!menuOpen)} style={{ fontSize: "24px" }}>
-            ☰
-          </div>
-
-          {/* Popover panel only when open */}
-          {menuOpen && (
-            <div
-              style={{
-                position: "absolute",
-                top: "40px",
-                left: "0",
-                background: "#444",
-                padding: "10px",
-                borderRadius: "4px",
-                zIndex: 10,
-                minWidth: "240px",
-              }}
-            >
-              {/* Add ticker form */}
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  const symbol = e.currentTarget.elements.symbol.value.toUpperCase();
-                  if (symbol) addTicker(symbol);
-                  e.currentTarget.reset();
-                }}
-              >
-                <input
-                  type="text"
-                  name="symbol"
-                  placeholder="Enter ticker (e.g., AAPL)"
-                  style={{ width: "100%", padding: "6px" }}
-                />
-                <button
-                  type="submit"
-                  style={{
-                    marginTop: "6px",
-                    width: "100%",
-                    padding: "6px",
-                    background: "#2d7ef7",
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                  }}
-                >
-                  ➕ Add Ticker
-                </button>
-              </form>
-
-              {/* Open fullscreen compare view */}
-              <button
-                onClick={() => setFullscreenWidget({ type: "compare" })}
-                style={{
-                  marginTop: "10px",
-                  width: "100%",
-                  padding: "6px",
-                  background: "#555",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                🔍 Compare Mode
-              </button>
-
-              {/* Future widget spawners (wire later) */}
-              <button
-                style={{
-                  marginTop: "10px",
-                  width: "100%",
-                  padding: "6px",
-                  background: "#555",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                📅 Add Calendar
-              </button>
-              <button
-                style={{
-                  marginTop: "10px",
-                  width: "100%",
-                  padding: "6px",
-                  background: "#555",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                📰 Add News
-              </button>
-              <button
-                style={{
-                  marginTop: "10px",
-                  width: "100%",
-                  padding: "6px",
-                  background: "#555",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                ✍️ Add Blog
-              </button>
-              <button
-                style={{
-                  marginTop: "10px",
-                  width: "100%",
-                  padding: "6px",
-                  background: "#555",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                }}
-              >
-                🔐 Login
-              </button>
-            </div>
-          )}
+          ☰
         </div>
 
         {/* Render ticker widgets */}
@@ -456,6 +495,7 @@ export default function Dashboard() {
                 cursor: "pointer",
                 padding: "4px 6px",
               }}
+              aria-label="Close widget"
             >
               ✖
             </button>
@@ -476,6 +516,7 @@ export default function Dashboard() {
                 cursor: "pointer",
                 padding: "4px 6px",
               }}
+              aria-label="Fullscreen"
             >
               ⛶
             </button>
