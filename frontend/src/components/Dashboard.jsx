@@ -29,17 +29,17 @@ export default function Dashboard() {
     >
       {/* Hamburger menu widget (draggable) */}
       <div key="menu" style={{ background: "#333", color: "#fff" }}>
-        ☰ Hamburger Menu
+        ☰ Menu
       </div>
 
       {/* Screener widget (draggable) */}
       <div key="screener" style={{ background: "#eee" }}>
-        📊 Screener Widget
+        📊 Screener
       </div>
 
       {/* Calendar widget (draggable) */}
       <div key="calendar" style={{ background: "#ddd" }}>
-        📅 Calendar Widget
+        📅 Calendar
       </div>
     </GridLayout>
   );
