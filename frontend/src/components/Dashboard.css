@@ -1,0 +1,45 @@
+/* Base menu styling */
+.menu {
+  background: #333;
+  color: #fff;
+  padding: 10px;
+}
+
+/* Menu pinned to top */
+.menu-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+/* Menu pinned to bottom */
+.menu-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+/* Menu pinned to left side */
+.menu-left {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 200px;
+}
+
+/* Menu pinned to right side */
+.menu-right {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  width: 200px;
+}
+
+/* Content area: add margin so menu doesn’t overlap */
+.content {
+  margin: 50px; /* adjust as needed */
+}
