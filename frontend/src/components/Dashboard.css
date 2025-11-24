@@ -2,44 +2,60 @@
 .menu {
   background: #333;
   color: #fff;
-  padding: 10px;
+  padding: 8px;
 }
 
-/* Menu pinned to top */
+/* Buttons auto-size to their content */
+.menu button {
+  background: transparent;
+  color: #fff;
+  border: none;
+  padding: 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Top menu: horizontal row, width = sum of items */
 .menu-top {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
+  display: flex;          /* side by side */
+  flex-direction: row;
 }
 
-/* Menu pinned to bottom */
+/* Bottom menu: horizontal row */
 .menu-bottom {
   position: fixed;
   bottom: 0;
   left: 0;
-  right: 0;
+  display: flex;
+  flex-direction: row;
 }
 
-/* Menu pinned to left side */
+/* Left menu: vertical stack, width = longest item */
 .menu-left {
   position: fixed;
   top: 0;
-  bottom: 0;
   left: 0;
-  width: 200px;
+  display: flex;
+  flex-direction: column; /* stacked vertically */
+  align-items: flex-start;
 }
 
-/* Menu pinned to right side */
+/* Right menu: vertical stack */
 .menu-right {
   position: fixed;
   top: 0;
-  bottom: 0;
   right: 0;
-  width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 /* Content area: add margin so menu doesn’t overlap */
 .content {
-  margin: 50px; /* adjust as needed */
+  margin: 60px; /* adjust depending on menu size */
 }
