@@ -1,41 +1,37 @@
-// App.jsx
-// Fully commented example using React Router for page navigation
-
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./App.css";
 
-// Simple page components
-function HomePage() {
-  return <h1>🏠 User Homepage</h1>;
-}
-
-function TickerPage() {
-  return <h1>📈 Ticker Page</h1>;
-}
-
-function CalendarPage() {
-  return <h1>📅 Calendar Page</h1>;
-}
-
-function NewsPage() {
-  return <h1>📰 News Page</h1>;
-}
-
-function BlogPage() {
-  return <h1>✍️ Blog Page</h1>;
-}
-
-function SettingsPage() {
-  return <h1>⚙️ Settings Page</h1>;
-}
+// Page components
+import HomePage from "./pages/HomePage";
+import TickerPage from "./pages/TickerPage";
+import CalendarPage from "./pages/CalendarPage";
+import NewsPage from "./pages/NewsPage";
+import BlogPage from "./pages/BlogPage";
+import SettingsPage from "./pages/SettingsPage";
 
 export default function App() {
+  // Menu position state: top, bottom, left, right
+  const [menuPosition, setMenuPosition] = useState("left");
+
+  // Detect orientation on mount and resize
+  useEffect(() => {
+    const updatePosition = () => {
+      if (window.innerWidth > window.innerHeight) {
+        setMenuPosition("left"); // landscape default
+      } else {
+        setMenuPosition("top"); // portrait default
+      }
+    };
+    updatePosition();
+    window.addEventListener("resize", updatePosition);
+    return () => window.removeEventListener("resize", updatePosition);
+  }, []);
+
   return (
     <Router>
-      {/* Menu bar at the top (homepage navigation) */}
-      <nav className="menu-bar">
-        {/* Each Link is a menu item that routes to a page */}
+      {/* Menu bar with dynamic position */}
+      <nav className={`menu menu-${menuPosition}`}>
         <Link to="/">Home</Link>
         <Link to="/ticker">Ticker</Link>
         <Link to="/calendar">Calendar</Link>
@@ -44,7 +40,7 @@ export default function App() {
         <Link to="/settings">Settings</Link>
       </nav>
 
-      {/* Page content area */}
+      {/* Page content */}
       <main className="page-content">
         <Routes>
           <Route path="/" element={<HomePage />} />
@@ -52,7 +48,15 @@ export default function App() {
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/blog" element={<BlogPage />} />
-          <Route path="/settings" element={<SettingsPage />} />
+          <Route
+            path="/settings"
+            element={
+              <SettingsPage
+                menuPosition={menuPosition}
+                setMenuPosition={setMenuPosition}
+              />
+            }
+          />
         </Routes>
       </main>
     </Router>

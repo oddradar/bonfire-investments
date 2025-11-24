@@ -1,25 +1,59 @@
-/* Menu bar styling */
-.menu-bar {
+/* Base menu styling */
+.menu {
   background: #333;
   color: #fff;
   padding: 8px;
-  display: flex;
-  gap: 12px; /* spacing between items */
 }
 
-/* Menu items auto-size to their text */
-.menu-bar a {
+/* Menu items auto-size to content */
+.menu a {
   color: #fff;
   text-decoration: none;
   padding: 6px 10px;
-  border-radius: 4px;
+  display: inline-block;
 }
 
-.menu-bar a:hover {
-  background: #444;
+/* Top menu: horizontal row */
+.menu-top {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+/* Bottom menu: horizontal row */
+.menu-bottom {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+}
+
+/* Left menu: vertical stack */
+.menu-left {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Right menu: vertical stack */
+.menu-right {
+  position: fixed;
+  top: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* Page content area */
 .page-content {
-  padding: 20px;
+  margin: 60px;
 }
